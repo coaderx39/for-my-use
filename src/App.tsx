@@ -1417,6 +1417,113 @@ Be analytical, precise, and data-driven. When asked about specific numbers (stre
   // ==========================================
   // LORD KRISHNA AI ENGINE & CONVERSATIONS
   // ==========================================
+const [krishnaVoice, setKrishnaVoice] = useState<{
+  messageId: string | null;
+  status: "idle" | "loading" | "playing" | "paused" | "error";
+  error?: string;
+}>({
+  messageId: null,
+  status: "idle",
+});
+      const krishnaVoiceAudioRef = useRef<HTMLAudioElement | null>(null);
+const krishnaVoiceAudioUrlRef = useRef<string | null>(null);
+const krishnaVoiceMessageRef = useRef<string | null>(null);
+      const prepareKrishnaNarration = async (message: KrishnaMessage) => {
+  const cachedScript = message.voiceText || krishnaVoiceScripts[message.id];
+
+  if (cachedScript) {
+    return getKrishnaNarrationText(cachedScript);
+  }
+
+  const writtenReply = getKrishnaNarrationText(message.text);
+
+  if (!profile.geminiKey || writtenReply.length < 80) {
+    return writtenReply;
+  }
+
+  try {
+    const expandedReply = await callGeminiApi(
+      profile.geminiKey,
+      [
+        {
+          role: "user",
+          parts: [
+            {
+              text: `Create a spoken narration for this Krishna guidance:
+
+${writtenReply}`,
+            },
+          ],
+        },
+      ],
+      `You are preparing the voice companion version of a written Shri Krishna guidance reply.
+Keep every important idea and emotional nuance.
+Expand it into a gentle, clear, human-sounding Hindi/Hinglish explanation.
+Do not use markdown, headings, emojis, or stage directions.`,
+      false
+    );
+
+    const cleanedReply = getKrishnaNarrationText(expandedReply);
+
+    if (cleanedReply.length > writtenReply.length) {
+      setKrishnaVoiceScripts((current) => ({
+        ...current,
+        [message.id]: cleanedReply,
+      }));
+
+      return cleanedReply;
+    }
+  } catch (error) {
+    console.warn(
+      "Krishna extended narration unavailable; using written reply.",
+      error
+    );
+  }
+
+  return writtenReply;
+};
+    const response = await fetch("/api/tts", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    text: narration,
+  }),
+});
+    const audioUrl = URL.createObjectURL(await response.blob());
+
+const audio = new Audio(audioUrl);
+audio.preload = "auto";
+audio.volume = 0.95;
+
+krishnaVoiceAudioRef.current = audio;
+krishnaVoiceAudioUrlRef.current = audioUrl;
+
+    audio.onplay = () => {
+  setKrishnaVoice({
+    messageId: message.id,
+    status: "playing",
+  });
+};
+
+audio.onpause = () => {
+  setKrishnaVoice({
+    messageId: message.id,
+    status: "paused",
+  });
+};
+
+audio.onended = () => {
+  krishnaVoiceMessageRef.current = null;
+  releaseKrishnaVoiceAudio();
+
+  setKrishnaVoice({
+    messageId: null,
+    status: "idle",
+  });
+};
+      
   const KRISHNA_SYSTEM_PROMPT = `You are Bhagwan Shri Krishna speaking directly with ${profile.name || "Parth"} (your beloved friend, devotee, and brother).
 You are not a generic AI assistant. You embody the supreme wisdom, unconditional love, serene calm, and divine authority of Lord Shri Krishna from Shreemad Bhagavad Gita and the Mahabharata.
 
