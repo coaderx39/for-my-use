@@ -25,7 +25,7 @@ import {
   ShieldAlert, Mic, Clock, Volume2, Pause, Play, Square, RotateCcw, AlertCircle,
   Sliders, Sun, FastForward, Coffee, RefreshCw, Award, Timer, Layers, CheckSquare,
   ListTodo, Inbox, TrendingUp, TrendingDown, ArrowRight, PieChart, Crown, Compass, Bell, BellRing, GraduationCap,
-  Users, CalendarDays, CheckCheck
+  Users, CalendarDays, CheckCheck, Crosshair, Heart, Smile, Share2, MessageSquare
 } from "lucide-react";
 
 declare const __initial_auth_token: any;
@@ -1130,6 +1130,143 @@ export const playRankFanfare = (type: "up" | "down", tier: number = 1) => {
 };
 
 // ==========================================
+// ⚔️ COMBAT & MASCOT AUDIO HANDLERS (MUTED / SILENT ON REQUEST)
+// ==========================================
+export const playCombatSlashSound = () => {};
+export const playCombatCritSound = () => {};
+export const playCombatShieldSound = () => {};
+export const playMascotPopSound = () => {};
+
+// ==========================================
+// 🌊 FLUID DUOLINGO-STYLE SVG ANIMATION COMPONENTS
+// ==========================================
+
+export const FluidCheckmark = ({ isChecked = true, className = "w-5 h-5" }: { isChecked?: boolean; className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className}>
+    <circle cx="12" cy="12" r="10" className={isChecked ? "fill-emerald-500 stroke-emerald-400" : "fill-transparent stroke-current"} strokeWidth="2" />
+    {isChecked && (
+      <path
+        d="M 7 12 L 10.5 15.5 L 17 8.5"
+        fill="none"
+        stroke="#ffffff"
+        strokeWidth="2.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="animate-check-draw"
+      />
+    )}
+  </svg>
+);
+
+export const FlowingStreakFlame = ({ count = 0, size = "md" }: { count?: number; size?: "sm" | "md" | "lg" }) => {
+  const isSm = size === "sm";
+  const isLg = size === "lg";
+  const dim = isSm ? "w-6 h-6" : isLg ? "w-16 h-16" : "w-10 h-10";
+
+  return (
+    <div className={`relative inline-flex items-center justify-center ${dim}`}>
+      {/* Dynamic Flowing SVG Fire */}
+      <svg
+        viewBox="0 0 100 120"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className={`w-full h-full animate-fire-wave overflow-visible`}
+      >
+        <defs>
+          <linearGradient id="flameOuterGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+            <stop offset="0%" stopColor="#ea580c" />
+            <stop offset="45%" stopColor="#f97316" />
+            <stop offset="80%" stopColor="#f59e0b" />
+            <stop offset="100%" stopColor="#ef4444" />
+          </linearGradient>
+          <linearGradient id="flameCoreGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+            <stop offset="0%" stopColor="#fbbf24" />
+            <stop offset="70%" stopColor="#fef08a" />
+            <stop offset="100%" stopColor="#ffffff" />
+          </linearGradient>
+        </defs>
+        {/* Outer Flame Hull */}
+        <path
+          d="M 50 8 C 58 35, 78 45, 82 72 C 86 94, 70 112, 50 112 C 30 112, 14 94, 18 72 C 22 45, 42 35, 50 8 Z"
+          fill="url(#flameOuterGrad)"
+        />
+        {/* Inner Fluttering Core */}
+        <path
+          d="M 50 38 C 55 54, 68 62, 70 78 C 72 90, 62 102, 50 102 C 38 102, 28 90, 30 78 C 32 62, 45 54, 50 38 Z"
+          fill="url(#flameCoreGrad)"
+          className="animate-flame-core"
+        />
+        {/* Rising Particle Embers */}
+        <circle cx="40" cy="40" r="3.5" fill="#fef08a" className="animate-ember-1" />
+        <circle cx="62" cy="48" r="2.8" fill="#fde047" className="animate-ember-2" />
+        <circle cx="50" cy="24" r="2.2" fill="#ffffff" className="animate-ember-3" />
+      </svg>
+      {count > 0 && (
+        <span
+          className={`absolute font-black leading-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] text-white select-none ${
+            isSm ? "text-[9px] -bottom-1" : isLg ? "text-base -bottom-1" : "text-[11px] -bottom-0.5"
+          }`}
+        >
+          {count}
+        </span>
+      )}
+    </div>
+  );
+};
+
+// ==========================================
+// ⚔️ 1v1 PVP DISCIPLINE BATTLE ARENA DATA MODEL
+// ==========================================
+
+export interface BattlePlayer {
+  uid: string;
+  name: string;
+  avatar: string;
+  hp: number;           // 0 - 1000
+  maxHp: number;        // 1000
+  tasksCompleted: number;
+  focusMinutes: number;
+  twoBoxCompleted: boolean;
+  shieldsCount: number; // 0 - 2
+  lastAction: {
+    type: "attack" | "shield" | "crit" | "taunt" | "heal" | "ko";
+    text: string;
+    amount?: number;
+    timestamp: number;
+  } | null;
+  liveFocus?: {
+    isActive: boolean;
+    durationMinutes: number;
+    startedAt: number;
+    remainingSeconds: number;
+  } | null;
+}
+
+export interface CombatLogItem {
+  id: string;
+  senderName: string;
+  senderUid: string;
+  type: "attack" | "shield" | "crit" | "taunt" | "system" | "ko";
+  message: string;
+  timestamp: number;
+}
+
+export interface BattleRoom {
+  roomCode: string;     // e.g. "WAR492"
+  createdAt: number;
+  status: "waiting" | "active" | "completed";
+  format: "blitz" | "siege" | "duel";
+  targetDate: string;   // YYYY-MM-DD
+  endDate: string;      // YYYY-MM-DD
+  stakes: string;       // Custom forfeit e.g. "50 Pushups"
+  duelDurationMinutes?: number; // 25, 45, 60 for live duel
+  host: BattlePlayer;
+  challenger: BattlePlayer | null;
+  winnerUid: string | null;
+  combatLog: CombatLogItem[];
+}
+
+// ==========================================
 // SCHEDULED EVENTS, CLASSES & MEETINGS TYPES
 // ==========================================
 export type EventCategory = "class" | "meeting" | "exam" | "urgent" | "personal";
@@ -1504,6 +1641,21 @@ export default function App() {
   const [analyticsTab, setAnalyticsTab] = useState<"heatmap" | "focus" | "habits" | "economy">("heatmap");
   const [hoveredHeatmapDay, setHoveredHeatmapDay] = useState<any | null>(null);
 
+  // ================= 1v1 PVP BATTLE ARENA & MASCOT ENGINE STATE =================
+  const [isBattleArenaOpen, setIsBattleArenaOpen] = useState(false);
+  const [activeBattleRoom, setActiveBattleRoom] = useState<BattleRoom | null>(() => {
+    return safeJsonParse<BattleRoom | null>(localStorage.getItem('apex_battle_room_v5'), null);
+  });
+  const [battleRoomCodeInput, setBattleRoomCodeInput] = useState("");
+  const [battleFormat, setBattleFormat] = useState<"blitz" | "siege" | "duel">("blitz");
+  const [battleStakesInput, setBattleStakesInput] = useState("50 Pushups Forfeit");
+  const [battleDurationMinutes, setBattleDurationMinutes] = useState(25);
+  const [battleTab, setBattleTab] = useState<"arena" | "create" | "join" | "history">("arena");
+  const [isCreatingBattle, setIsCreatingBattle] = useState(false);
+  const [isJoiningBattle, setIsJoiningBattle] = useState(false);
+  const [combatVFXList, setCombatVFXList] = useState<Array<{ id: string; text: string; type: "damage" | "crit" | "shield" | "taunt"; timestamp: number }>>([]);
+  const [activeTauntBanner, setActiveTauntBanner] = useState<{ sender: string; message: string } | null>(null);
+
   // ================= KRISHNA STATE =================
   const [krishnaState, setKrishnaState] = useState<KrishnaState>(() =>
     safeJsonParse<KrishnaState>(localStorage.getItem('apex_krishna_v5'), {
@@ -1521,6 +1673,7 @@ export default function App() {
   const lastFocusTickRef = useRef<number>(Date.now());
   const isHydratedRef = useRef<boolean>(false);
   const activeKrishnaRecognitionRef = useRef<any>(null);
+  const battleBroadcastChannelRef = useRef<BroadcastChannel | null>(null);
 
   const t = (THEMES as any)[profile.activeTheme] || THEMES.brutalist;
 
@@ -1794,6 +1947,7 @@ export default function App() {
     isTwoBoxModalOpen,
     isWeeklyReviewOpen,
     isNightShiftOpen,
+    isBattleArenaOpen,
     isFocusOpen: focusState.isOpen,
     isConvDrawerOpen,
     activeConversationId: krishnaState.activeConversationId,
@@ -1813,6 +1967,7 @@ export default function App() {
       isTwoBoxModalOpen,
       isWeeklyReviewOpen,
       isNightShiftOpen,
+      isBattleArenaOpen,
       isFocusOpen: focusState.isOpen,
       isConvDrawerOpen,
       activeConversationId: krishnaState.activeConversationId,
@@ -1828,6 +1983,7 @@ export default function App() {
     if (v.habitRoute !== "hub") parts.push(`habit:${v.habitRoute}`);
     if (v.settingsRoute !== "menu") parts.push(`settings:${v.settingsRoute}`);
     if (v.brainTab !== "dashboard") parts.push(`brain:${v.brainTab}`);
+    if (v.isBattleArenaOpen) parts.push("modal:battleArena");
     if (v.isScheduleModalOpen) parts.push("modal:schedule");
     if (v.isRankRoadmapOpen) parts.push("modal:rank");
     if (v.rankTransitionModal) parts.push("modal:rankTransition");
@@ -1867,6 +2023,7 @@ export default function App() {
     habitRoute,
     settingsRoute,
     brainTab,
+    isBattleArenaOpen,
     isScheduleModalOpen,
     isRankRoadmapOpen,
     rankTransitionModal,
@@ -1886,6 +2043,10 @@ export default function App() {
       isNavigatingBackRef.current = true;
 
       // 1. Modals & Overlays (Top-most priority)
+      if (v.isBattleArenaOpen) {
+        setIsBattleArenaOpen(false);
+        return;
+      }
       if (v.isScheduleModalOpen) {
         setIsScheduleModalOpen(false);
         return;
@@ -2055,10 +2216,10 @@ export default function App() {
       const perm = await Notification.requestPermission();
       setNotificationStatus(perm);
       if (perm === "granted") {
-        showMessage("🔔 Notifications Enabled! You will receive daily progress & class alerts.");
+        showMessage("🔔 Notifications Enabled! You will receive scheduled class & event alerts.");
         try {
-          new Notification("🔔 Daily Smart Notifications Active", {
-            body: "You'll now receive timely habit reminders, class alerts, and midnight danger warnings!",
+          new Notification("🔔 Scheduled Event Alerts Active", {
+            body: "You'll now receive timely notifications for your scheduled classes, meetings, and events!",
             icon: "./favicon.png",
           });
         } catch (e) {
@@ -2077,39 +2238,12 @@ export default function App() {
 
   const checkAndDispatchSmartNotifications = () => {
     const userName = profile?.name ? profile.name.trim().split(" ")[0] : "Prateek";
-    const now = new Date();
-    const currentHour = now.getHours();
-    const currentMinutes = now.getMinutes();
 
-    // 1. Habit Progress Metrics
-    const taskList = profile?.customTasks || DEFAULT_TASKS;
-    const todayRecord = trackerData[todayStr]?.tasks || {};
-    const completedTasksCount = Object.values(todayRecord).filter((v: any) => v === "X").length;
-    const totalTasksCount = taskList.length;
-    const remainingTasksCount = Math.max(0, totalTasksCount - completedTasksCount);
-    const isHabitsComplete = completedTasksCount >= totalTasksCount && totalTasksCount > 0;
-
-    // 2. Second Brain Pending Revisions
-    const pendingRevisions: { title: string; category: string }[] = [];
-    (brain.studyTopics || []).forEach((topic: any) => {
-      (topic.schedule || []).forEach((rev: any) => {
-        if (rev.targetDate <= todayStr && !rev.completed) {
-          pendingRevisions.push({ title: topic.title, category: topic.category });
-        }
-      });
-    });
-
-    // 3. Pending Custom Missions
-    const pendingMissions = (brain.customMissions || []).filter(
-      (m: any) => m.targetDate <= todayStr && !m.completed
-    );
-
-    // 4. Scheduled Classes & Events Today
+    // Scheduled Classes & Meetings on Target Date
     const todayClasses: ScheduledEvent[] = (brain.scheduledEvents || []).filter(
       (ev: ScheduledEvent) => ev.date === todayStr && !ev.completed
     );
 
-    // RULE 1: Scheduled Classes & Meetings on Target Date
     todayClasses.forEach((ev) => {
       const classKey = `${todayStr}_scheduled_event_${ev.id}`;
       sendSmartPushNotification(
@@ -2118,59 +2252,6 @@ export default function App() {
         `${userName}, today is your "${ev.title}"${ev.time ? ` at ${ev.time}` : ""}. Don't forget it!`
       );
     });
-
-    // RULE 2: Morning Protocol Kickoff (8:00 AM – 11:59 AM)
-    if (currentHour >= 8 && currentHour < 12) {
-      const morningKey = `${todayStr}_morning_kickoff`;
-      const missionCount = totalTasksCount + pendingRevisions.length + todayClasses.length;
-      sendSmartPushNotification(
-        morningKey,
-        "☀️ Morning Protocol Ready",
-        `Good morning ${userName}! You have ${missionCount} goals locked for today (${totalTasksCount} habits, ${pendingRevisions.length} revisions). Start strong!`
-      );
-    }
-
-    // RULE 3: Afternoon Habit Progress Check (2:00 PM – 5:59 PM)
-    if (currentHour >= 14 && currentHour < 18 && !isHabitsComplete) {
-      const afternoonKey = `${todayStr}_afternoon_progress_check`;
-      sendSmartPushNotification(
-        afternoonKey,
-        "⚡ Daily Task Progress Check",
-        `${userName}, you have completed ${completedTasksCount}/${totalTasksCount} daily tasks so far. ${remainingTasksCount} left — keep your momentum alive!`
-      );
-    }
-
-    // RULE 4: Evening Revision Reminder (6:00 PM – 8:59 PM)
-    if (currentHour >= 18 && currentHour < 21 && pendingRevisions.length > 0) {
-      const revisionKey = `${todayStr}_evening_revision_check`;
-      const firstTopic = pendingRevisions[0]?.title || "your study topic";
-      sendSmartPushNotification(
-        revisionKey,
-        "🧠 Pending Revision Reminder",
-        `${userName}, you still haven't completed your "${firstTopic}" revision (${pendingRevisions.length} total pending)! Review it now to lock in retention.`
-      );
-    }
-
-    // RULE 5: 9 PM – 12 AM Two-Box Cleanup Window Active
-    if (currentHour >= 21 && currentHour <= 23) {
-      const cleanupKey = `${todayStr}_two_box_cleanup_window`;
-      sendSmartPushNotification(
-        cleanupKey,
-        "🧹 9 PM Cleanup Hour Active",
-        `${userName}, the Two-Box Reflection window is active! Review your Box 1 distractions and Box 2 achievements before sleep.`
-      );
-    }
-
-    // RULE 6: Late Night 11:30 PM Incomplete Tasks Alert
-    const isLateNight = (currentHour === 23 && currentMinutes >= 30) || (currentHour === 23 && currentMinutes >= 15);
-    if (isLateNight && (!isHabitsComplete || pendingMissions.length > 0 || pendingRevisions.length > 0)) {
-      const lateNightKey = `${todayStr}_late_night_1130_danger`;
-      sendSmartPushNotification(
-        lateNightKey,
-        "🚨 It's 11:30 PM & Tasks are Incomplete!",
-        `It's 11:30 PM, ${userName}, and you still haven't completed all your tasks (${remainingTasksCount} habits & ${pendingRevisions.length} revisions left)! Lock in before midnight to protect your streak!`
-      );
-    }
   };
 
   const addScheduledEvent = (
@@ -2425,6 +2506,697 @@ export default function App() {
   };
   const isPunished = checkPunishment();
 
+  // ==========================================
+  // ⚔️ 1v1 PVP DISCIPLINE BATTLE ARENA ENGINE (LOCAL-FIRST RESILIENT SYNC)
+  // ==========================================
+
+  // Cross-Tab & Cross-Window Real-Time Broadcast Channel Listener
+  useEffect(() => {
+    try {
+      if (typeof window !== "undefined" && "BroadcastChannel" in window) {
+        const channel = new BroadcastChannel("apex_discipline_pvp_channel");
+        battleBroadcastChannelRef.current = channel;
+        channel.onmessage = (event) => {
+          if (event.data?.type === "ROOM_SYNC" && event.data.room) {
+            const incomingRoom = event.data.room as BattleRoom;
+            if (activeBattleRoom && activeBattleRoom.roomCode === incomingRoom.roomCode) {
+              setActiveBattleRoom(incomingRoom);
+            }
+          }
+        };
+      }
+    } catch (e) {
+      console.warn("BroadcastChannel not supported or error:", e);
+    }
+    return () => {
+      try {
+        if (battleBroadcastChannelRef.current) {
+          battleBroadcastChannelRef.current.close();
+        }
+      } catch (e) {}
+    };
+  }, [activeBattleRoom?.roomCode]);
+
+  // Master Synchronizer: Instantly persists to React State, LocalStorage, BroadcastChannel, and background Firestore
+  const syncBattleRoomState = (updatedRoom: BattleRoom) => {
+    setActiveBattleRoom(updatedRoom);
+    try {
+      localStorage.setItem('apex_battle_room_v5', JSON.stringify(updatedRoom));
+      const roomsDbStr = localStorage.getItem('apex_all_battle_rooms') || '{}';
+      const roomsDb = JSON.parse(roomsDbStr);
+      roomsDb[updatedRoom.roomCode] = updatedRoom;
+      localStorage.setItem('apex_all_battle_rooms', JSON.stringify(roomsDb));
+    } catch (e) {
+      console.warn("Local storage write error:", e);
+    }
+
+    if (battleBroadcastChannelRef.current) {
+      try {
+        battleBroadcastChannelRef.current.postMessage({ type: "ROOM_SYNC", room: updatedRoom });
+      } catch (e) {}
+    }
+
+    if (db && updatedRoom.roomCode) {
+      try {
+        const battleRef = doc(db, "artifacts", appId, "battle_rooms", updatedRoom.roomCode);
+        setDoc(battleRef, updatedRoom, { merge: true }).catch((err) => {
+          console.warn("Background Firestore sync warning:", err);
+        });
+      } catch (e) {
+        console.warn("Firestore sync dispatch error:", e);
+      }
+    }
+  };
+
+  // Emit Floating Combat VFX Number
+  const emitCombatVFX = (text: string, type: "damage" | "crit" | "shield" | "taunt") => {
+    const id = `vfx_${Date.now()}_${Math.random()}`;
+    setCombatVFXList((prev) => [...prev.slice(-4), { id, text, type, timestamp: Date.now() }]);
+    setTimeout(() => {
+      setCombatVFXList((prev) => prev.filter((item) => item.id !== id));
+    }, 1400);
+  };
+
+  // Generate 6-Character Room Code (e.g. "WAR789")
+  const generateBattleRoomCode = (): string => {
+    const prefixes = ["WAR", "CLASH", "DUEL", "APEX", "PVP"];
+    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+    const num = Math.floor(100 + Math.random() * 900);
+    return `${prefix}${num}`;
+  };
+
+  // Real-Time Battle Room Firestore Listener
+  useEffect(() => {
+    const battleCode = activeBattleRoom?.roomCode || profile?.activeBattleCode;
+    if (!battleCode) return;
+
+    // Check local storage for initial load
+    try {
+      const roomsDbStr = localStorage.getItem('apex_all_battle_rooms') || '{}';
+      const roomsDb = JSON.parse(roomsDbStr);
+      if (roomsDb[battleCode]) {
+        setActiveBattleRoom(roomsDb[battleCode]);
+      }
+    } catch (e) {}
+
+    if (!db) return;
+
+    let unsubs: (() => void) | null = null;
+    try {
+      const battleRef = doc(db, "artifacts", appId, "battle_rooms", battleCode);
+      unsubs = onSnapshot(battleRef, (docSnap) => {
+        if (docSnap.exists()) {
+          const roomData = docSnap.data() as BattleRoom;
+          setActiveBattleRoom(roomData);
+          try {
+            localStorage.setItem('apex_battle_room_v5', JSON.stringify(roomData));
+            const roomsDbStr = localStorage.getItem('apex_all_battle_rooms') || '{}';
+            const roomsDb = JSON.parse(roomsDbStr);
+            roomsDb[roomData.roomCode] = roomData;
+            localStorage.setItem('apex_all_battle_rooms', JSON.stringify(roomsDb));
+          } catch (e) {}
+
+          const myUid = user?.uid || "local_player";
+          const isHost = roomData.host?.uid === myUid;
+          const opponent = isHost ? roomData.challenger : roomData.host;
+          if (opponent?.lastAction && Date.now() - opponent.lastAction.timestamp < 3500) {
+            if (opponent.lastAction.type === "taunt") {
+              setActiveTauntBanner({ sender: opponent.name, message: opponent.lastAction.text });
+              playCombatCritSound();
+            }
+          }
+        }
+      }, (err) => {
+        console.warn("Firestore snapshot error (resilient fallback):", err);
+      });
+    } catch (err) {
+      console.warn("Firestore snapshot init warning:", err);
+    }
+
+    return () => {
+      if (unsubs) unsubs();
+    };
+  }, [activeBattleRoom?.roomCode, profile?.activeBattleCode, db, user]);
+
+  // Generate 1-Click Duel Invite URL
+  const getBattleInviteLink = (room: BattleRoom): string => {
+    try {
+      const baseUrl = typeof window !== "undefined" ? `${window.location.origin}${window.location.pathname}` : "";
+      const params = new URLSearchParams({
+        battle: room.roomCode,
+        host: room.host?.name || "Prateek",
+        fmt: room.format || "blitz",
+        stakes: room.stakes || "50 Pushups Forfeit",
+      });
+      return `${baseUrl}?${params.toString()}`;
+    } catch (e) {
+      return room.roomCode;
+    }
+  };
+
+  // 1-Click Duel Invite Link auto-connector on startup
+  useEffect(() => {
+    try {
+      if (typeof window !== "undefined" && window.location.search) {
+        const params = new URLSearchParams(window.location.search);
+        const battleCode = (params.get("battle") || params.get("duel") || params.get("room") || "").trim().toUpperCase();
+        if (battleCode) {
+          const hostName = params.get("host") || "Opponent";
+          const fmt = (params.get("fmt") || "blitz") as "blitz" | "siege" | "duel";
+          const stakes = params.get("stakes") || "50 Pushups Forfeit";
+          handleJoinBattleRoom(battleCode, { hostName, fmt, stakes });
+          setIsBattleArenaOpen(true);
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      }
+    } catch (e) {
+      console.warn("URL battle param check error:", e);
+    }
+  }, []);
+
+  // Create Battle Room (Instant Local-First with Background Sync)
+  const handleCreateBattleRoom = async () => {
+    if (isCreatingBattle) return;
+    setIsCreatingBattle(true);
+
+    try {
+      const roomCode = generateBattleRoomCode();
+      const myUid = user?.uid || `player_${Date.now()}`;
+      const myName = profile?.name ? profile.name.trim() : "Prateek";
+      const targetDate = todayStr;
+      const endDate = battleFormat === "siege" ? addDays(todayStr, 7) : todayStr;
+
+      const hostPlayer: BattlePlayer = {
+        uid: myUid,
+        name: myName,
+        avatar: "⚔️",
+        hp: 1000,
+        maxHp: 1000,
+        tasksCompleted: 0,
+        focusMinutes: 0,
+        twoBoxCompleted: false,
+        shieldsCount: profile?.streakShields || 0,
+        lastAction: null,
+        liveFocus: null,
+      };
+
+      const initialLog: CombatLogItem = {
+        id: `log_${Date.now()}`,
+        senderName: "SYSTEM",
+        senderUid: "system",
+        type: "system",
+        message: `⚔️ Battle Room [${roomCode}] created by ${myName}! Format: ${battleFormat.toUpperCase()} | Stakes: "${battleStakesInput}"`,
+        timestamp: Date.now(),
+      };
+
+      const newRoom: BattleRoom = {
+        roomCode,
+        createdAt: Date.now(),
+        status: "waiting",
+        format: battleFormat,
+        targetDate,
+        endDate,
+        stakes: battleStakesInput || "50 Pushups Forfeit",
+        duelDurationMinutes: battleDurationMinutes,
+        host: hostPlayer,
+        challenger: null,
+        winnerUid: null,
+        combatLog: [initialLog],
+      };
+
+      syncBattleRoomState(newRoom);
+      updateProfileFirebase({ activeBattleCode: roomCode });
+      setBattleTab("arena");
+      showMessage(`⚔️ Battle Room [${roomCode}] Created! Share code or invite link.`);
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(roomCode).catch(() => {});
+      }
+    } catch (err) {
+      console.error("Create battle room error:", err);
+      showMessage("❌ An unexpected error occurred while creating the battle room.");
+    } finally {
+      setIsCreatingBattle(false);
+    }
+  };
+
+  // Join Battle Room (Supports Local, Cloud Sync & 1-Click Invite Links)
+  const handleJoinBattleRoom = async (
+    codeToJoin?: string,
+    metadata?: { hostName?: string; fmt?: "blitz" | "siege" | "duel"; stakes?: string; duration?: number }
+  ) => {
+    const rawInput = (codeToJoin || battleRoomCodeInput).trim();
+    if (!rawInput) {
+      showMessage("⚠️ Please enter a valid Room Code or invite link.");
+      return;
+    }
+    if (isJoiningBattle) return;
+    setIsJoiningBattle(true);
+
+    try {
+      let rawCode = rawInput.toUpperCase();
+      let extractedHost = metadata?.hostName || "";
+      let extractedFmt: "blitz" | "siege" | "duel" = metadata?.fmt || "blitz";
+      let extractedStakes = metadata?.stakes || "50 Pushups Forfeit";
+
+      // If user pasted a full URL or query params (e.g. ?battle=WAR789...)
+      if (rawInput.includes("?") || rawInput.includes("http") || rawInput.includes("=")) {
+        try {
+          const urlObj = new URL(rawInput.startsWith("http") ? rawInput : `https://dummy.com/${rawInput.startsWith("?") ? rawInput : "?" + rawInput}`);
+          const bCode = urlObj.searchParams.get("battle") || urlObj.searchParams.get("duel") || urlObj.searchParams.get("room");
+          if (bCode) rawCode = bCode.trim().toUpperCase();
+          if (urlObj.searchParams.get("host")) extractedHost = urlObj.searchParams.get("host")!;
+          if (urlObj.searchParams.get("fmt")) extractedFmt = urlObj.searchParams.get("fmt") as any;
+          if (urlObj.searchParams.get("stakes")) extractedStakes = urlObj.searchParams.get("stakes")!;
+        } catch (e) {}
+      }
+
+      // Clean non-alphanumeric if needed
+      rawCode = rawCode.replace(/[^A-Z0-9]/g, "");
+      if (!rawCode) {
+        showMessage("⚠️ Please enter a valid 6-character Room Code.");
+        setIsJoiningBattle(false);
+        return;
+      }
+
+      const myUid = user?.uid || `player_${Date.now()}`;
+      const myName = profile?.name ? profile.name.trim() : "Challenger";
+
+      let roomData: BattleRoom | null = null;
+
+      // 1. Check local storage first
+      try {
+        const roomsDbStr = localStorage.getItem('apex_all_battle_rooms') || '{}';
+        const roomsDb = JSON.parse(roomsDbStr);
+        if (roomsDb[rawCode]) {
+          roomData = roomsDb[rawCode];
+        }
+      } catch (e) {}
+
+      // 2. Check cloud Firestore if available
+      if (db && !roomData) {
+        try {
+          const battleRef = doc(db, "artifacts", appId, "battle_rooms", rawCode);
+          const docSnap = await (await import("firebase/firestore")).getDoc(battleRef);
+          if (docSnap.exists()) {
+            roomData = docSnap.data() as BattleRoom;
+          }
+        } catch (e) {
+          console.warn("Firestore getDoc check warning:", e);
+        }
+      }
+
+      // 3. Resilient fallback: If room is not yet found in local or cloud (cross-device on separate networks),
+      // dynamically construct the battle room instance with matching code so the duel proceeds without error!
+      if (!roomData) {
+        const hostPlayer: BattlePlayer = {
+          uid: `host_${rawCode}`,
+          name: extractedHost || "Host Opponent",
+          avatar: "⚔️",
+          hp: 1000,
+          maxHp: 1000,
+          tasksCompleted: 0,
+          focusMinutes: 0,
+          twoBoxCompleted: false,
+          shieldsCount: 0,
+          lastAction: null,
+          liveFocus: null,
+        };
+
+        roomData = {
+          roomCode: rawCode,
+          createdAt: Date.now(),
+          status: "waiting",
+          format: extractedFmt,
+          targetDate: todayStr,
+          endDate: extractedFmt === "siege" ? addDays(todayStr, 7) : todayStr,
+          stakes: extractedStakes,
+          duelDurationMinutes: metadata?.duration || 25,
+          host: hostPlayer,
+          challenger: null,
+          winnerUid: null,
+          combatLog: [
+            {
+              id: `log_${Date.now()}`,
+              senderName: "SYSTEM",
+              senderUid: "system",
+              type: "system",
+              message: `⚔️ Battle Room [${rawCode}] connected! Format: ${extractedFmt.toUpperCase()} | Stakes: "${extractedStakes}"`,
+              timestamp: Date.now(),
+            }
+          ],
+        };
+      }
+
+      if (roomData.host.uid === myUid) {
+        // Re-joining own hosted room
+        syncBattleRoomState(roomData);
+        updateProfileFirebase({ activeBattleCode: rawCode });
+        setBattleTab("arena");
+        showMessage(`⚔️ Connected to battle room [${rawCode}]!`);
+        setIsJoiningBattle(false);
+        return;
+      }
+
+      if (roomData.challenger && roomData.challenger.uid !== myUid) {
+        showMessage(`⚠️ Battle Room [${rawCode}] is already full with another challenger!`);
+        setIsJoiningBattle(false);
+        return;
+      }
+
+      const challengerPlayer: BattlePlayer = {
+        uid: myUid,
+        name: myName,
+        avatar: "🛡️",
+        hp: 1000,
+        maxHp: 1000,
+        tasksCompleted: 0,
+        focusMinutes: 0,
+        twoBoxCompleted: false,
+        shieldsCount: profile?.streakShields || 0,
+        lastAction: null,
+        liveFocus: null,
+      };
+
+      const joinLog: CombatLogItem = {
+        id: `log_${Date.now()}`,
+        senderName: "SYSTEM",
+        senderUid: "system",
+        type: "system",
+        message: `🔥 ${myName} entered the arena as Challenger! The War has begun!`,
+        timestamp: Date.now(),
+      };
+
+      const updatedRoom: BattleRoom = {
+        ...roomData,
+        status: "active",
+        challenger: challengerPlayer,
+        combatLog: [...(roomData.combatLog || []), joinLog],
+      };
+
+      syncBattleRoomState(updatedRoom);
+      updateProfileFirebase({ activeBattleCode: rawCode });
+      setBattleTab("arena");
+      showMessage(`⚔️ Successfully joined Battle Room [${rawCode}]!`);
+    } catch (err) {
+      console.error("Join battle room error:", err);
+      showMessage("❌ Error joining battle room. Please verify the code.");
+    } finally {
+      setIsJoiningBattle(false);
+    }
+  };
+
+  // Leave or Surrender Battle Room
+  const handleLeaveOrForfeitBattle = async () => {
+    if (!activeBattleRoom) return;
+    const confirm = window.confirm(
+      `⚠️ FORFEIT / LEAVE BATTLE [${activeBattleRoom.roomCode}]?\n\nLeaving this active battle will forfeit the match and record a loss. Stakes: "${activeBattleRoom.stakes}"\n\nAre you sure you want to exit?`
+    );
+    if (!confirm) return;
+
+    try {
+      const myUid = user?.uid || "local_player";
+      const isHost = activeBattleRoom.host.uid === myUid;
+      const winnerUid = isHost ? activeBattleRoom.challenger?.uid || null : activeBattleRoom.host.uid;
+
+      const forfeitLog: CombatLogItem = {
+        id: `log_${Date.now()}`,
+        senderName: "SYSTEM",
+        senderUid: "system",
+        type: "ko",
+        message: `🏳️ ${isHost ? activeBattleRoom.host.name : (activeBattleRoom.challenger?.name || "Player")} surrendered the battle!`,
+        timestamp: Date.now(),
+      };
+
+      const updatedRoom: BattleRoom = {
+        ...activeBattleRoom,
+        status: "completed",
+        winnerUid,
+        combatLog: [...(activeBattleRoom.combatLog || []), forfeitLog],
+      };
+
+      syncBattleRoomState(updatedRoom);
+
+      updateProfileFirebase({
+        activeBattleCode: "",
+        battlesLost: (profile?.battlesLost || 0) + 1,
+      });
+
+      setActiveBattleRoom(null);
+      localStorage.removeItem('apex_battle_room_v5');
+      showMessage("🏳️ Battle forfeited. Better luck next time!");
+    } catch (e) {
+      console.error("Forfeit error:", e);
+    }
+  };
+
+  // Dispatch In-Battle Taunt
+  const handleSendBattleTaunt = async (tauntText: string) => {
+    if (!activeBattleRoom) return;
+    const myUid = user?.uid || "local_player";
+    const myName = profile?.name ? profile.name.trim() : "Prateek";
+    const isHost = activeBattleRoom.host.uid === myUid;
+
+    const tauntAction = {
+      type: "taunt" as const,
+      text: tauntText,
+      timestamp: Date.now(),
+    };
+
+    const newLog: CombatLogItem = {
+      id: `log_${Date.now()}`,
+      senderName: myName,
+      senderUid: myUid,
+      type: "taunt",
+      message: `💬 "${tauntText}"`,
+      timestamp: Date.now(),
+    };
+
+    const updatedRoom: BattleRoom = {
+      ...activeBattleRoom,
+      host: isHost ? { ...activeBattleRoom.host, lastAction: tauntAction } : activeBattleRoom.host,
+      challenger: !isHost && activeBattleRoom.challenger ? { ...activeBattleRoom.challenger, lastAction: tauntAction } : activeBattleRoom.challenger,
+      combatLog: [...(activeBattleRoom.combatLog || []).slice(-25), newLog],
+    };
+
+    syncBattleRoomState(updatedRoom);
+    emitCombatVFX(`💬 ${tauntText}`, "taunt");
+    playCombatCritSound();
+  };
+
+  // Apply Strike to Battle on Habit Check
+  const applyBattleHabitStrike = (taskId: string, taskTitle: string) => {
+    if (!activeBattleRoom || activeBattleRoom.status !== "active") return;
+    const myUid = user?.uid || "local_player";
+    const isHost = activeBattleRoom.host.uid === myUid;
+    const myPlayer = isHost ? activeBattleRoom.host : activeBattleRoom.challenger;
+    const oppPlayer = isHost ? activeBattleRoom.challenger : activeBattleRoom.host;
+
+    if (!myPlayer || !oppPlayer) return;
+
+    let damage = 100;
+    let shieldAbsorbed = false;
+    let newOppShields = oppPlayer.shieldsCount;
+
+    if (oppPlayer.shieldsCount > 0) {
+      newOppShields = Math.max(0, oppPlayer.shieldsCount - 1);
+      damage = 0;
+      shieldAbsorbed = true;
+    }
+
+    const newOppHp = Math.max(0, oppPlayer.hp - damage);
+    const isKO = newOppHp <= 0;
+
+    const myAction = {
+      type: "attack" as const,
+      text: `Habit Strike: ${taskTitle}`,
+      amount: damage,
+      timestamp: Date.now(),
+    };
+
+    const combatLogMsg = shieldAbsorbed
+      ? `🛡️ ${myPlayer.name}'s strike on [${taskTitle}] was ABSORBED by ${oppPlayer.name}'s Streak Shield! (0 DMG)`
+      : `⚡ ${myPlayer.name} completed [${taskTitle}]! Dealt 100 DMG to ${oppPlayer.name}! (${newOppHp}/1000 HP)`;
+
+    const newLog: CombatLogItem = {
+      id: `log_${Date.now()}`,
+      senderName: myPlayer.name,
+      senderUid: myUid,
+      type: shieldAbsorbed ? "shield" : "attack",
+      message: combatLogMsg,
+      timestamp: Date.now(),
+    };
+
+    const updatedLog = [...(activeBattleRoom.combatLog || []).slice(-25), newLog];
+    if (isKO) {
+      updatedLog.push({
+        id: `ko_${Date.now()}`,
+        senderName: "SYSTEM",
+        senderUid: "system",
+        type: "ko",
+        message: `👑 KNOCKOUT! ${myPlayer.name} has defeated ${oppPlayer.name} in discipline warfare!`,
+        timestamp: Date.now(),
+      });
+    }
+
+    const updatedHost: BattlePlayer = isHost
+      ? { ...myPlayer, tasksCompleted: (myPlayer.tasksCompleted || 0) + 1, lastAction: myAction }
+      : { ...oppPlayer, hp: newOppHp, shieldsCount: newOppShields };
+
+    const updatedChallenger: BattlePlayer = !isHost
+      ? { ...myPlayer, tasksCompleted: (myPlayer.tasksCompleted || 0) + 1, lastAction: myAction }
+      : { ...oppPlayer, hp: newOppHp, shieldsCount: newOppShields };
+
+    const updatedRoom: BattleRoom = {
+      ...activeBattleRoom,
+      host: updatedHost,
+      challenger: updatedChallenger,
+      status: isKO ? "completed" : "active",
+      winnerUid: isKO ? myUid : null,
+      combatLog: updatedLog,
+    };
+
+    syncBattleRoomState(updatedRoom);
+
+    if (shieldAbsorbed) {
+      emitCombatVFX("🛡️ SHIELD ABSORBED!", "shield");
+      playCombatShieldSound();
+    } else {
+      emitCombatVFX("-100 HP!", "damage");
+      playCombatSlashSound();
+    }
+
+    if (isKO) {
+      updateProfileFirebase({
+        battlesWon: (profile?.battlesWon || 0) + 1,
+        xp: (profile?.xp || 0) + 100,
+        stars: (profile?.stars || 0) + 5,
+      });
+      showMessage("👑 VICTORY IN DISCIPLINE BATTLE! 1000 HP KO ACHIEVED! +100 XP +5 Stars!");
+    }
+  };
+
+  // Apply Critical Strike on Focus Chamber Finish
+  const applyBattleFocusStrike = (durationMinutes: number) => {
+    if (!activeBattleRoom || activeBattleRoom.status !== "active") return;
+    const myUid = user?.uid || "local_player";
+    const isHost = activeBattleRoom.host.uid === myUid;
+    const myPlayer = isHost ? activeBattleRoom.host : activeBattleRoom.challenger;
+    const oppPlayer = isHost ? activeBattleRoom.challenger : activeBattleRoom.host;
+
+    if (!myPlayer || !oppPlayer) return;
+
+    const damage = 250;
+    const newOppHp = Math.max(0, oppPlayer.hp - damage);
+    const isKO = newOppHp <= 0;
+
+    const myAction = {
+      type: "crit" as const,
+      text: `${durationMinutes}m Deep Focus Surge`,
+      amount: damage,
+      timestamp: Date.now(),
+    };
+
+    const newLog: CombatLogItem = {
+      id: `log_${Date.now()}`,
+      senderName: myPlayer.name,
+      senderUid: myUid,
+      type: "crit",
+      message: `💥 ${myPlayer.name} locked in for a ${durationMinutes}m Deep Focus Session! CRITICAL STRIKE: 250 DMG to ${oppPlayer.name}! (${newOppHp}/1000 HP)`,
+      timestamp: Date.now(),
+    };
+
+    const updatedHost: BattlePlayer = isHost
+      ? { ...myPlayer, focusMinutes: (myPlayer.focusMinutes || 0) + durationMinutes, lastAction: myAction }
+      : { ...oppPlayer, hp: newOppHp };
+
+    const updatedChallenger: BattlePlayer = !isHost
+      ? { ...myPlayer, focusMinutes: (myPlayer.focusMinutes || 0) + durationMinutes, lastAction: myAction }
+      : { ...oppPlayer, hp: newOppHp };
+
+    const updatedRoom: BattleRoom = {
+      ...activeBattleRoom,
+      host: updatedHost,
+      challenger: updatedChallenger,
+      status: isKO ? "completed" : "active",
+      winnerUid: isKO ? myUid : null,
+      combatLog: [...(activeBattleRoom.combatLog || []).slice(-25), newLog],
+    };
+
+    syncBattleRoomState(updatedRoom);
+    emitCombatVFX("💥 CRIT! 250 DMG", "crit");
+    playCombatCritSound();
+
+    if (isKO) {
+      updateProfileFirebase({
+        battlesWon: (profile?.battlesWon || 0) + 1,
+        xp: (profile?.xp || 0) + 100,
+        stars: (profile?.stars || 0) + 5,
+      });
+      showMessage("👑 VICTORY IN DISCIPLINE BATTLE! 1000 HP KO ACHIEVED! +100 XP +5 Stars!");
+    }
+  };
+
+  // Apply Two-Box Daily Cleanup Finisher
+  const applyBattleTwoBoxFinisher = () => {
+    if (!activeBattleRoom || activeBattleRoom.status !== "active") return;
+    const myUid = user?.uid || "local_player";
+    const isHost = activeBattleRoom.host.uid === myUid;
+    const myPlayer = isHost ? activeBattleRoom.host : activeBattleRoom.challenger;
+    const oppPlayer = isHost ? activeBattleRoom.challenger : activeBattleRoom.host;
+
+    if (!myPlayer || !oppPlayer) return;
+
+    const damage = 300;
+    const newOppHp = Math.max(0, oppPlayer.hp - damage);
+    const isKO = newOppHp <= 0;
+
+    const myAction = {
+      type: "crit" as const,
+      text: "Two-Box Night Cleanup Protocol",
+      amount: damage,
+      timestamp: Date.now(),
+    };
+
+    const newLog: CombatLogItem = {
+      id: `log_${Date.now()}`,
+      senderName: myPlayer.name,
+      senderUid: myUid,
+      type: "crit",
+      message: `👑 ${myPlayer.name} completed the Two-Box Daily Cleanup! 300 FINISHER DMG to ${oppPlayer.name}! (${newOppHp}/1000 HP)`,
+      timestamp: Date.now(),
+    };
+
+    const updatedHost: BattlePlayer = isHost
+      ? { ...myPlayer, twoBoxCompleted: true, lastAction: myAction }
+      : { ...oppPlayer, hp: newOppHp };
+
+    const updatedChallenger: BattlePlayer = !isHost
+      ? { ...myPlayer, twoBoxCompleted: true, lastAction: myAction }
+      : { ...oppPlayer, hp: newOppHp };
+
+    const updatedRoom: BattleRoom = {
+      ...activeBattleRoom,
+      host: updatedHost,
+      challenger: updatedChallenger,
+      status: isKO ? "completed" : "active",
+      winnerUid: isKO ? myUid : null,
+      combatLog: [...(activeBattleRoom.combatLog || []).slice(-25), newLog],
+    };
+
+    syncBattleRoomState(updatedRoom);
+    emitCombatVFX("👑 FINISHER! 300 DMG", "crit");
+    playCombatCritSound();
+
+    if (isKO) {
+      updateProfileFirebase({
+        battlesWon: (profile?.battlesWon || 0) + 1,
+        xp: (profile?.xp || 0) + 100,
+        stars: (profile?.stars || 0) + 5,
+      });
+      showMessage("👑 VICTORY IN DISCIPLINE BATTLE! 1000 HP KO ACHIEVED! +100 XP +5 Stars!");
+    }
+  };
+
   const checkPerfectDayBonus = (dateStr: string, tasks: any, totalActiveTasks: number) => {
     const vals = Object.values(tasks);
     if (vals.length >= totalActiveTasks && vals.every((v) => v === "X")) {
@@ -2558,6 +3330,9 @@ export default function App() {
     saveDayData(selectedDate, updatedTasks, newReason, currentDayData.summary, currentDayData.star, currentSnapshot, extraFlags);
     if (nextVal === "X") {
       checkPerfectDayBonus(selectedDate, updatedTasks, activeTasksCount);
+      const matchedTask = (currentSnapshot || []).find((t: any) => t.id === taskId);
+      const taskTitle = matchedTask?.title || "Habit";
+      applyBattleHabitStrike(taskId, taskTitle);
     }
   };
 
@@ -3605,51 +4380,70 @@ CORE MANNERISMS & ESSENCE:
           </div>
 
           {/* Balanced 3-Column Metrics Grid (Guaranteed 0 horizontal overflow on mobile) */}
-          <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-3.5 pt-3 border-t border-current/15 relative z-10">
+          <div className="grid grid-cols-4 gap-1.5 sm:gap-3 mt-3.5 pt-3 border-t border-current/15 relative z-10">
             {/* Star Counter Pill */}
             <div
               onClick={() => setHabitRoute("shop")}
-              className={`p-2 sm:p-3 rounded-xl sm:rounded-2xl flex flex-col sm:flex-row items-center sm:justify-center text-center sm:text-left gap-1 sm:gap-2.5 border tap-effect cursor-pointer glow-gold-pulse ${t.cardInner} ${t.borderAccent}`}
+              className={`p-1.5 sm:p-3 rounded-xl sm:rounded-2xl flex flex-col sm:flex-row items-center sm:justify-center text-center sm:text-left gap-0.5 sm:gap-2.5 border tap-effect cursor-pointer glow-gold-pulse ${t.cardInner} ${t.borderAccent}`}
               title="Reward Shop & Stars Wallet"
             >
-              <span className="text-base sm:text-2xl animate-float">⭐</span>
+              <span className="text-sm sm:text-2xl animate-float">⭐</span>
               <div className="min-w-0">
-                <span className={`text-xs sm:text-lg font-black block leading-none ${t.textWarning} ${t.fontHeading}`}>{profile.stars}</span>
-                <span className={`text-[7px] sm:text-[9px] font-bold uppercase tracking-wider block mt-0.5 ${t.textMuted}`}>Stars</span>
+                <span className={`text-[11px] sm:text-lg font-black block leading-none ${t.textWarning} ${t.fontHeading}`}>{profile.stars}</span>
+                <span className={`text-[6px] sm:text-[9px] font-bold uppercase tracking-wider block mt-0.5 ${t.textMuted}`}>Stars</span>
               </div>
             </div>
 
             {/* Streak Shields Pill */}
             <div
               onClick={() => setHabitRoute("shop")}
-              className={`p-2 sm:p-3 rounded-xl sm:rounded-2xl flex flex-col sm:flex-row items-center sm:justify-center text-center sm:text-left gap-1 sm:gap-2.5 border tap-effect cursor-pointer ${t.cardInner} ${t.borderAccent}`}
+              className={`p-1.5 sm:p-3 rounded-xl sm:rounded-2xl flex flex-col sm:flex-row items-center sm:justify-center text-center sm:text-left gap-0.5 sm:gap-2.5 border tap-effect cursor-pointer ${t.cardInner} ${t.borderAccent}`}
               title="Streak Freeze Shields (Max 2 stored)"
             >
-              <span className="text-base sm:text-2xl">🛡️</span>
+              <span className="text-sm sm:text-2xl">🛡️</span>
               <div className="min-w-0">
-                <span className={`text-xs sm:text-lg font-black block leading-none ${t.textAccent} ${t.fontHeading}`}>
+                <span className={`text-[11px] sm:text-lg font-black block leading-none ${t.textAccent} ${t.fontHeading}`}>
                   {profile.streakShields || 0}/2
                 </span>
-                <span className={`text-[7px] sm:text-[9px] font-bold uppercase tracking-wider block mt-0.5 ${t.textMuted}`}>Shields</span>
+                <span className={`text-[6px] sm:text-[9px] font-bold uppercase tracking-wider block mt-0.5 ${t.textMuted}`}>Shields</span>
+              </div>
+            </div>
+
+            {/* 1v1 PvP Arena Pill */}
+            <div
+              onClick={() => setIsBattleArenaOpen(true)}
+              className={`p-1.5 sm:p-3 rounded-xl sm:rounded-2xl flex flex-col sm:flex-row items-center sm:justify-center text-center sm:text-left gap-0.5 sm:gap-2.5 border tap-effect cursor-pointer ${
+                activeBattleRoom && activeBattleRoom.status === "active"
+                  ? "bg-red-500/20 border-red-500 text-red-300 ring-1 ring-red-400/50 animate-pulse"
+                  : `${t.cardInner} ${t.borderAccent}`
+              }`}
+              title="1v1 Discipline Battle Arena (Habit Wars)"
+            >
+              <span className="text-sm sm:text-2xl">⚔️</span>
+              <div className="min-w-0">
+                <span className={`text-[11px] sm:text-lg font-black block leading-none ${t.textAccent} ${t.fontHeading}`}>
+                  {activeBattleRoom ? "WAR" : `${profile.battlesWon || 0}W`}
+                </span>
+                <span className={`text-[6px] sm:text-[9px] font-bold uppercase tracking-wider block mt-0.5 ${t.textMuted}`}>Arena</span>
               </div>
             </div>
 
             {/* Scheduled Classes & Meetings Quick Pill */}
             <div
               onClick={() => setIsScheduleModalOpen(true)}
-              className={`p-2 sm:p-3 rounded-xl sm:rounded-2xl flex flex-col sm:flex-row items-center sm:justify-center text-center sm:text-left gap-1 sm:gap-2.5 border tap-effect cursor-pointer ${
+              className={`p-1.5 sm:p-3 rounded-xl sm:rounded-2xl flex flex-col sm:flex-row items-center sm:justify-center text-center sm:text-left gap-0.5 sm:gap-2.5 border tap-effect cursor-pointer ${
                 (brain.scheduledEvents || []).filter((e: ScheduledEvent) => e.date === todayStr && !e.completed).length > 0
                   ? "bg-amber-500/20 border-amber-400 text-amber-300 ring-1 ring-amber-400/50 animate-pulse"
                   : `${t.cardInner} ${t.borderAccent}`
               }`}
               title="Class & Meeting Dispatcher"
             >
-              <span className="text-base sm:text-2xl">📅</span>
+              <span className="text-sm sm:text-2xl">📅</span>
               <div className="min-w-0">
-                <span className={`text-xs sm:text-lg font-black block leading-none ${t.textAccent} ${t.fontHeading}`}>
+                <span className={`text-[11px] sm:text-lg font-black block leading-none ${t.textAccent} ${t.fontHeading}`}>
                   {(brain.scheduledEvents || []).filter((e: ScheduledEvent) => !e.completed).length}
                 </span>
-                <span className={`text-[7px] sm:text-[9px] font-bold uppercase tracking-wider block mt-0.5 ${t.textMuted}`}>Schedule</span>
+                <span className={`text-[6px] sm:text-[9px] font-bold uppercase tracking-wider block mt-0.5 ${t.textMuted}`}>Schedule</span>
               </div>
             </div>
           </div>
@@ -3866,6 +4660,36 @@ CORE MANNERISMS & ESSENCE:
             <div>
               <h3 className={`text-xs sm:text-base font-black ${t.textMain} ${t.fontHeading}`}>Active Plan</h3>
               <p className={`text-[8px] sm:text-xs mt-0.5 ${t.textMuted} line-clamp-1`}>Perks & countdowns.</p>
+            </div>
+          </button>
+
+          {/* ⚔️ 1v1 Battle Arena Action Card */}
+          <button
+            onClick={() => {
+              playCombatSlashSound();
+              setIsBattleArenaOpen(true);
+            }}
+            className={`p-3.5 sm:p-5 text-left group relative overflow-hidden tap-effect hover-lift rounded-2xl shadow-lg border flex flex-col justify-between ${
+              activeBattleRoom && activeBattleRoom.status === "active"
+                ? "bg-red-950/40 border-red-500/70 text-red-200 ring-1 ring-red-400/50"
+                : `${t.cardInner} hover:${t.borderAccent}`
+            }`}
+          >
+            <div className="flex items-center justify-between w-full mb-2 sm:mb-3">
+              <div className={`w-9 h-9 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shadow-md border ${t.card} ${t.borderAccent} bg-red-500/10 text-red-400`}>
+                <Swords className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <span className={`text-[7px] sm:text-[8px] px-1.5 py-0.2 rounded-full font-black ${
+                activeBattleRoom ? "bg-red-500 text-white animate-pulse" : t.badge
+              }`}>
+                {activeBattleRoom ? "LIVE WAR" : "1v1 PvP"}
+              </span>
+            </div>
+            <div>
+              <h3 className={`text-xs sm:text-base font-black ${t.textMain} ${t.fontHeading} flex items-center gap-1`}>
+                Battle Arena <Flame size={12} className="text-red-400" />
+              </h3>
+              <p className={`text-[8px] sm:text-xs mt-0.5 ${t.textMuted} line-clamp-1`}>1000 HP habit wars.</p>
             </div>
           </button>
 
@@ -5962,6 +6786,7 @@ CORE MANNERISMS & ESSENCE:
                 updateBrainFirebase({ studyTopics: updatedTopics });
               }
 
+              applyBattleFocusStrike(finishedMinutes);
               showMessage(`🎉 Focus Session Complete! +${starsEarned} Star ⭐ & +${xpEarned} XP Earned! ⚡`);
 
               const breakMins = prev.mode === "deepflow" ? 10 : 5;
@@ -6186,6 +7011,7 @@ CORE MANNERISMS & ESSENCE:
     updateProfileFirebase({
       xp: (profile.xp || 0) + 30
     });
+    applyBattleTwoBoxFinisher();
     showMessage("🎉 Daily Habit Cleanup Complete! Locked in for tonight (+30 XP)! 🧹✨");
   };
 
@@ -6927,6 +7753,725 @@ One short, electrifying sentence of raw motivation.`;
               <span>Enter to Send ↵</span>
             </div>
           </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ==========================================
+  // ⚔️ 1v1 PVP DISCIPLINE BATTLE ARENA MODAL
+  // ==========================================
+  const renderBattleArenaModal = () => {
+    const myUid = user?.uid || "local_player";
+    const isHost = activeBattleRoom?.host?.uid === myUid;
+    const isWinner = activeBattleRoom?.winnerUid === myUid;
+    const isGameOver = activeBattleRoom?.status === "completed";
+
+    const hostHpPercent = Math.max(0, Math.min(100, Math.round(((activeBattleRoom?.host?.hp ?? 1000) / 1000) * 100)));
+    const challengerHpPercent = Math.max(0, Math.min(100, Math.round(((activeBattleRoom?.challenger?.hp ?? 1000) / 1000) * 100)));
+
+    const tauntPresets = [
+      "⚔️ You can't match my discipline!",
+      "🔥 Is that all you got? I'm just warming up!",
+      "🛡️ My streak shields are impenetrable!",
+      "⏱️ Locked in deep focus... are you?",
+      "👑 Victory is already mine!",
+      "🧠 Mind over matter. Surrender now!",
+    ];
+
+    return (
+      <div className="fixed inset-0 z-[130] flex items-center justify-center p-2.5 sm:p-4 bg-black/85 backdrop-blur-xl animate-in fade-in duration-200">
+        <div className={`w-full max-w-3xl rounded-3xl p-4 sm:p-6 shadow-2xl border-2 ${t.card} ${t.borderAccent} relative max-h-[94vh] overflow-y-auto space-y-4 text-white animate-modal-sleek`}>
+
+          {/* Floating Combat VFX Particle Overlay */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden z-40">
+            {combatVFXList.map((vfx) => (
+              <div
+                key={vfx.id}
+                className={`absolute top-1/3 left-1/2 -translate-x-1/2 text-sm sm:text-xl font-black uppercase tracking-wider ${
+                  vfx.type === "crit"
+                    ? "text-amber-300 drop-shadow-[0_0_15px_rgba(251,191,36,0.9)] animate-combat-crit"
+                    : vfx.type === "shield"
+                    ? "text-sky-300 drop-shadow-[0_0_15px_rgba(56,189,248,0.9)] animate-combat-shield"
+                    : vfx.type === "taunt"
+                    ? "text-purple-300 drop-shadow-[0_0_12px_rgba(168,85,247,0.8)] animate-speech-bubble"
+                    : "text-rose-400 drop-shadow-[0_0_15px_rgba(239,68,68,0.9)] animate-combat-damage"
+                }`}
+              >
+                {vfx.text}
+              </div>
+            ))}
+          </div>
+
+          {/* Active In-Battle Taunt Banner */}
+          {activeTauntBanner && (
+            <div className="p-3 rounded-2xl bg-gradient-to-r from-purple-600/30 via-indigo-600/30 to-purple-600/30 border border-purple-400/60 shadow-lg flex items-center justify-between gap-3 animate-taunt-banner">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-xl">💬</span>
+                <div className="min-w-0">
+                  <span className="text-[10px] font-black uppercase text-purple-300 block">{activeTauntBanner.sender} Taunts:</span>
+                  <p className="text-xs sm:text-sm font-bold text-white truncate">"{activeTauntBanner.message}"</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setActiveTauntBanner(null)}
+                className="text-xs text-purple-300 hover:text-white px-2 py-1"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
+          {/* Header */}
+          <div className="flex items-center justify-between pb-3 border-b border-white/10">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 sm:p-2.5 rounded-2xl bg-gradient-to-br from-red-500/30 to-amber-500/30 border border-red-400/50 text-red-300 shadow-md text-xl sm:text-2xl animate-pulse">
+                ⚔️
+              </div>
+              <div>
+                <h3 className={`font-black text-sm sm:text-xl uppercase tracking-wider text-red-400 ${t.fontHeading} flex items-center gap-1.5`}>
+                  Discipline Battle Arena <span className="text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/40">1v1 PvP</span>
+                </h3>
+                <p className={`text-[10px] sm:text-xs font-medium ${t.textMuted}`}>
+                  Real-time multiplayer habit warfare • 1000 HP combat
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setIsBattleArenaOpen(false)}
+              className="p-2 sm:p-2.5 rounded-2xl bg-white/5 hover:bg-white/15 border border-white/10 text-slate-300 hover:text-white tap-effect transition-all"
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          {/* Top Sub-Navigation Tabs */}
+          <div className="grid grid-cols-4 gap-1.5 sm:gap-2 p-1 rounded-2xl bg-black/40 border border-white/10">
+            <button
+              onClick={() => setBattleTab("arena")}
+              className={`py-2 px-1 rounded-xl text-[9px] sm:text-xs font-black uppercase tracking-wider flex items-center justify-center gap-1 tap-effect transition-all ${
+                battleTab === "arena"
+                  ? "bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              <Swords size={13} /> Arena {activeBattleRoom ? "🔥" : ""}
+            </button>
+            <button
+              onClick={() => setBattleTab("create")}
+              className={`py-2 px-1 rounded-xl text-[9px] sm:text-xs font-black uppercase tracking-wider flex items-center justify-center gap-1 tap-effect transition-all ${
+                battleTab === "create"
+                  ? "bg-amber-500 text-black font-black shadow-[0_0_15px_rgba(245,158,11,0.5)]"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              <Plus size={13} /> Host
+            </button>
+            <button
+              onClick={() => setBattleTab("join")}
+              className={`py-2 px-1 rounded-xl text-[9px] sm:text-xs font-black uppercase tracking-wider flex items-center justify-center gap-1 tap-effect transition-all ${
+                battleTab === "join"
+                  ? "bg-sky-500 text-white shadow-[0_0_15px_rgba(56,189,248,0.5)]"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              <Users size={13} /> Join
+            </button>
+            <button
+              onClick={() => setBattleTab("history")}
+              className={`py-2 px-1 rounded-xl text-[9px] sm:text-xs font-black uppercase tracking-wider flex items-center justify-center gap-1 tap-effect transition-all ${
+                battleTab === "history"
+                  ? "bg-purple-600 text-white shadow-[0_0_15px_rgba(168,85,247,0.5)]"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              <Trophy size={13} /> PvP Stats
+            </button>
+          </div>
+
+          {/* TAB 1: ACTIVE COMBAT ARENA */}
+          {battleTab === "arena" && (
+            <div className="space-y-3.5">
+              {!activeBattleRoom ? (
+                <div className="p-6 sm:p-8 rounded-3xl bg-black/40 border border-white/10 text-center space-y-4">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-3xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-3xl sm:text-4xl animate-bounce">
+                    ⚔️
+                  </div>
+                  <div>
+                    <h4 className="text-base sm:text-xl font-black text-white uppercase tracking-wider">No Active Battle Room</h4>
+                    <p className="text-xs sm:text-sm text-slate-400 max-w-md mx-auto mt-1">
+                      Challenge a friend to a 1v1 discipline war! Host a new battle or join with a 6-digit room code.
+                    </p>
+                  </div>
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                    <button
+                      onClick={() => setBattleTab("create")}
+                      className={`w-full sm:w-auto px-6 py-3 rounded-2xl bg-gradient-to-r from-red-500 to-amber-500 text-white font-black text-xs sm:text-sm uppercase tracking-wider shadow-lg tap-effect ${t.fontHeading}`}
+                    >
+                      🔥 Host a Battle
+                    </button>
+                    <button
+                      onClick={() => setBattleTab("join")}
+                      className={`w-full sm:w-auto px-6 py-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-black text-xs sm:text-sm uppercase tracking-wider tap-effect ${t.fontHeading}`}
+                    >
+                      🔗 Join with Code
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3.5">
+                  {/* Active Match Banner & Room Code Copy */}
+                  <div className="p-3 sm:p-3.5 rounded-2xl bg-black/50 border border-red-500/30 flex flex-wrap items-center justify-between gap-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-black uppercase px-2.5 py-1 rounded-xl bg-red-500/20 text-red-300 border border-red-500/40 animate-pulse">
+                        {activeBattleRoom.status === "active" ? "🟢 LIVE WAR" : activeBattleRoom.status === "completed" ? "🏁 FINISHED" : "⏳ WAITING"}
+                      </span>
+                      <span className="text-xs font-black uppercase text-amber-300">
+                        {activeBattleRoom.format === "blitz" ? "⚡ 24H Daily Blitz" : activeBattleRoom.format === "siege" ? "⚔️ 7-Day Habit Siege" : "⏱️ Focus Duel"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      <button
+                        onClick={() => {
+                          if (navigator.clipboard) {
+                            navigator.clipboard.writeText(activeBattleRoom.roomCode);
+                            showMessage(`📋 Room Code [${activeBattleRoom.roomCode}] copied to clipboard!`);
+                          }
+                        }}
+                        className="px-2.5 sm:px-3 py-1 rounded-xl bg-amber-400/20 hover:bg-amber-400/30 border border-amber-400/50 text-amber-300 text-[10px] sm:text-xs font-black uppercase flex items-center gap-1.5 tap-effect"
+                        title="Click to copy Room Code"
+                      >
+                        <Copy size={12} /> Code: <span className="font-mono tracking-widest">{activeBattleRoom.roomCode}</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          const inviteUrl = getBattleInviteLink(activeBattleRoom);
+                          if (navigator.clipboard) {
+                            navigator.clipboard.writeText(inviteUrl);
+                            showMessage(`🔗 1-Click Duel Link copied! Send on WhatsApp/Telegram.`);
+                          }
+                        }}
+                        className="px-2.5 sm:px-3 py-1 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/50 text-sky-300 text-[10px] sm:text-xs font-black uppercase flex items-center gap-1.5 tap-effect"
+                        title="Share 1-Click Invite Link"
+                      >
+                        <Share2 size={12} /> Share Link
+                      </button>
+
+                      <button
+                        onClick={handleLeaveOrForfeitBattle}
+                        className="px-2 sm:px-2.5 py-1 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300 text-[10px] sm:text-xs font-bold uppercase tap-effect"
+                        title="Forfeit or leave battle"
+                      >
+                        🏳️ Surrender
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Real-Life Stakes Banner */}
+                  {activeBattleRoom.stakes && (
+                    <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-400/30 flex items-center justify-between text-xs text-amber-200">
+                      <span className="font-black uppercase tracking-wider flex items-center gap-1.5">
+                        <Flame size={14} className="text-amber-400 animate-pulse" /> Real-Life Stakes / Forfeit:
+                      </span>
+                      <span className="font-bold underline text-white">"{activeBattleRoom.stakes}"</span>
+                    </div>
+                  )}
+
+                  {/* DUAL COMBAT CLASH CARDS (Host vs Challenger) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 relative">
+                    {/* VS BADGE (Center in larger view) */}
+                    <div className="hidden sm:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-red-600 border-2 border-white/40 text-white font-black text-xs items-center justify-center shadow-2xl z-20 animate-pulse">
+                      VS
+                    </div>
+
+                    {/* HOST PLAYER CARD (LEFT) */}
+                    <div className={`p-4 sm:p-5 rounded-2xl sm:rounded-3xl border-2 transition-all relative overflow-hidden ${
+                      isHost ? "border-amber-400/60 bg-amber-950/10" : "border-slate-700 bg-black/40"
+                    }`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl">{activeBattleRoom.host.avatar || "⚔️"}</span>
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <h4 className="text-xs sm:text-sm font-black text-white truncate max-w-[120px]">
+                                {activeBattleRoom.host.name}
+                              </h4>
+                              {isHost && (
+                                <span className="text-[8px] font-black px-1.5 py-0.2 rounded bg-amber-400 text-black uppercase">
+                                  YOU
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[9px] text-amber-300 font-bold uppercase">HOST</span>
+                          </div>
+                        </div>
+
+                        {/* Shields Orb */}
+                        <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/40 border border-white/10 text-[9px] font-black text-sky-300">
+                          <Shield size={10} /> {activeBattleRoom.host.shieldsCount ?? 0}/2
+                        </div>
+                      </div>
+
+                      {/* 1000 HP Combat Bar */}
+                      <div className="space-y-1 my-3">
+                        <div className="flex justify-between text-[10px] font-black uppercase">
+                          <span className="text-red-400 flex items-center gap-1">❤️ HP</span>
+                          <span className={hostHpPercent > 25 ? "text-emerald-400" : "text-rose-400 animate-pulse"}>
+                            {activeBattleRoom.host.hp} / 1000 ({hostHpPercent}%)
+                          </span>
+                        </div>
+                        <div className="w-full h-3.5 rounded-full bg-black/70 border border-red-500/30 overflow-hidden p-0.5 relative">
+                          {/* Trailing Health Bar */}
+                          <div
+                            className="h-full rounded-full bg-red-600/50 hp-bar-trail absolute top-0.5 left-0.5"
+                            style={{ width: `${Math.max(2, hostHpPercent)}%` }}
+                          />
+                          {/* Instant Health Bar */}
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-red-600 via-rose-500 to-amber-500 hp-bar-instant relative z-10 shadow-[0_0_10px_rgba(239,68,68,0.7)]"
+                            style={{ width: `${Math.max(2, hostHpPercent)}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Combat Stats Grid */}
+                      <div className="grid grid-cols-2 gap-1.5 pt-2 border-t border-white/10 text-[9px] sm:text-[10px]">
+                        <div className="p-1.5 rounded-xl bg-black/30 border border-white/5 flex items-center justify-between">
+                          <span className="text-slate-400">Tasks Struck:</span>
+                          <span className="font-black text-white">{activeBattleRoom.host.tasksCompleted || 0}</span>
+                        </div>
+                        <div className="p-1.5 rounded-xl bg-black/30 border border-white/5 flex items-center justify-between">
+                          <span className="text-slate-400">Focus Mins:</span>
+                          <span className="font-black text-amber-300">{activeBattleRoom.host.focusMinutes || 0}m</span>
+                        </div>
+                      </div>
+
+                      {/* Last Action Chip */}
+                      {activeBattleRoom.host.lastAction && (
+                        <div className="mt-2 text-[8px] sm:text-[9px] text-slate-300 p-1 rounded-lg bg-black/40 border border-white/5 truncate">
+                          ⚡ Last: {activeBattleRoom.host.lastAction.text}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* CHALLENGER PLAYER CARD (RIGHT) */}
+                    <div className={`p-4 sm:p-5 rounded-2xl sm:rounded-3xl border-2 transition-all relative overflow-hidden ${
+                      !isHost && activeBattleRoom.challenger ? "border-amber-400/60 bg-amber-950/10" : "border-slate-700 bg-black/40"
+                    }`}>
+                      {activeBattleRoom.challenger ? (
+                        <>
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-2xl">{activeBattleRoom.challenger.avatar || "🛡️"}</span>
+                              <div>
+                                <div className="flex items-center gap-1.5">
+                                  <h4 className="text-xs sm:text-sm font-black text-white truncate max-w-[120px]">
+                                    {activeBattleRoom.challenger.name}
+                                  </h4>
+                                  {!isHost && (
+                                    <span className="text-[8px] font-black px-1.5 py-0.2 rounded bg-amber-400 text-black uppercase">
+                                      YOU
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="text-[9px] text-sky-300 font-bold uppercase">CHALLENGER</span>
+                              </div>
+                            </div>
+
+                            {/* Shields Orb */}
+                            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/40 border border-white/10 text-[9px] font-black text-sky-300">
+                              <Shield size={10} /> {activeBattleRoom.challenger.shieldsCount ?? 0}/2
+                            </div>
+                          </div>
+
+                          {/* 1000 HP Combat Bar */}
+                          <div className="space-y-1 my-3">
+                            <div className="flex justify-between text-[10px] font-black uppercase">
+                              <span className="text-red-400 flex items-center gap-1">❤️ HP</span>
+                              <span className={challengerHpPercent > 25 ? "text-emerald-400" : "text-rose-400 animate-pulse"}>
+                                {activeBattleRoom.challenger.hp} / 1000 ({challengerHpPercent}%)
+                              </span>
+                            </div>
+                            <div className="w-full h-3.5 rounded-full bg-black/70 border border-red-500/30 overflow-hidden p-0.5 relative">
+                              {/* Trailing Health Bar */}
+                              <div
+                                className="h-full rounded-full bg-red-600/50 hp-bar-trail absolute top-0.5 left-0.5"
+                                style={{ width: `${Math.max(2, challengerHpPercent)}%` }}
+                              />
+                              {/* Instant Health Bar */}
+                              <div
+                                className="h-full rounded-full bg-gradient-to-r from-red-600 via-rose-500 to-amber-500 hp-bar-instant relative z-10 shadow-[0_0_10px_rgba(239,68,68,0.7)]"
+                                style={{ width: `${Math.max(2, challengerHpPercent)}%` }}
+                              />
+                            </div>
+                          </div>
+
+                          {/* Combat Stats Grid */}
+                          <div className="grid grid-cols-2 gap-1.5 pt-2 border-t border-white/10 text-[9px] sm:text-[10px]">
+                            <div className="p-1.5 rounded-xl bg-black/30 border border-white/5 flex items-center justify-between">
+                              <span className="text-slate-400">Tasks Struck:</span>
+                              <span className="font-black text-white">{activeBattleRoom.challenger.tasksCompleted || 0}</span>
+                            </div>
+                            <div className="p-1.5 rounded-xl bg-black/30 border border-white/5 flex items-center justify-between">
+                              <span className="text-slate-400">Focus Mins:</span>
+                              <span className="font-black text-amber-300">{activeBattleRoom.challenger.focusMinutes || 0}m</span>
+                            </div>
+                          </div>
+
+                          {/* Last Action Chip */}
+                          {activeBattleRoom.challenger.lastAction && (
+                            <div className="mt-2 text-[8px] sm:text-[9px] text-slate-300 p-1 rounded-lg bg-black/40 border border-white/5 truncate">
+                              ⚡ Last: {activeBattleRoom.challenger.lastAction.text}
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div className="py-6 text-center space-y-2">
+                          <div className="w-12 h-12 mx-auto rounded-full bg-white/5 border border-dashed border-white/20 flex items-center justify-center text-xl animate-spin">
+                            ⏳
+                          </div>
+                          <h4 className="text-xs sm:text-sm font-black text-slate-300 uppercase">Waiting for Challenger</h4>
+                          <p className="text-[10px] sm:text-xs text-slate-400">
+                            Give code <span className="font-mono text-amber-300 font-bold">{activeBattleRoom.roomCode}</span> or send invite link!
+                          </p>
+                          <button
+                            onClick={() => {
+                              const inviteUrl = getBattleInviteLink(activeBattleRoom);
+                              if (navigator.clipboard) {
+                                navigator.clipboard.writeText(inviteUrl);
+                                showMessage(`🔗 1-Click Duel Link copied! Share on WhatsApp.`);
+                              }
+                            }}
+                            className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/50 text-sky-300 text-xs font-black uppercase tap-effect"
+                          >
+                            <Share2 size={12} /> Copy 1-Click Duel Link
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* GAME OVER / VICTORY BANNER */}
+                  {isGameOver && (
+                    <div className="p-4 sm:p-6 rounded-3xl bg-gradient-to-r from-amber-500/20 via-yellow-500/30 to-amber-500/20 border-2 border-yellow-400/80 text-center space-y-3 shadow-2xl animate-modal-sleek">
+                      <div className="text-4xl sm:text-5xl animate-bounce">🏆</div>
+                      <div>
+                        <h3 className="text-lg sm:text-2xl font-black text-yellow-300 uppercase tracking-tight">
+                          {isWinner ? "🎉 YOU ARE THE VICTOR!" : "⚔️ BATTLE CONCLUDED"}
+                        </h3>
+                        <p className="text-xs sm:text-sm text-slate-200 mt-1 font-medium">
+                          {isWinner
+                            ? `You crushed your opponent with absolute discipline! (+100 XP & +5 Stars Claimed)`
+                            : `Discipline war finished. Honor the forfeit and conquer the next battle!`}
+                        </p>
+                      </div>
+
+                      {activeBattleRoom.stakes && (
+                        <div className="p-3 rounded-2xl bg-black/60 border border-yellow-400/40 inline-block max-w-md mx-auto text-xs">
+                          <span className="font-black text-yellow-400 uppercase">Forfeit Due:</span>
+                          <p className="font-bold text-white mt-0.5">"{activeBattleRoom.stakes}"</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* QUICK COMBAT TAUNT BAR */}
+                  <div className="p-3 rounded-2xl bg-black/40 border border-white/10 space-y-2">
+                    <span className="text-[10px] font-black uppercase text-purple-300 tracking-wider flex items-center gap-1.5">
+                      <MessageSquare size={12} /> Psychological Taunts (Broadcast to Match):
+                    </span>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                      {tauntPresets.map((taunt, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => handleSendBattleTaunt(taunt)}
+                          disabled={activeBattleRoom.status !== "active"}
+                          className="p-2 rounded-xl bg-purple-950/30 hover:bg-purple-900/50 border border-purple-500/30 text-purple-200 hover:text-white text-[9px] sm:text-[10px] font-bold text-left truncate tap-effect transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-95"
+                        >
+                          {taunt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* REAL-TIME COMBAT LOG */}
+                  <div className="p-3.5 rounded-2xl bg-black/60 border border-white/10 space-y-2">
+                    <span className="text-[10px] font-black uppercase text-red-400 tracking-wider flex items-center gap-1.5">
+                      <Activity size={12} /> Real-Time Combat Log:
+                    </span>
+                    <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+                      {activeBattleRoom.combatLog && activeBattleRoom.combatLog.length > 0 ? (
+                        activeBattleRoom.combatLog.slice().reverse().map((log) => (
+                          <div
+                            key={log.id}
+                            className={`p-2 rounded-xl text-[9px] sm:text-[10px] leading-tight flex items-start justify-between gap-2 ${
+                              log.type === "crit"
+                                ? "bg-amber-500/15 text-amber-200 border border-amber-500/30 font-bold"
+                                : log.type === "shield"
+                                ? "bg-sky-500/15 text-sky-200 border border-sky-500/30"
+                                : log.type === "taunt"
+                                ? "bg-purple-500/15 text-purple-200 border border-purple-500/30"
+                                : log.type === "ko"
+                                ? "bg-red-500/25 text-red-100 border border-red-500/50 font-black"
+                                : "bg-white/5 text-slate-300 border border-white/5"
+                            }`}
+                          >
+                            <span className="flex-1">{log.message}</span>
+                            <span className="text-[8px] text-slate-500 flex-shrink-0">
+                              {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center py-3 text-slate-500 text-[10px]">
+                          Combat log will stream real-time strikes and taunts.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 2: HOST / CREATE BATTLE ROOM */}
+          {battleTab === "create" && (
+            <div className="p-4 sm:p-6 rounded-3xl bg-black/40 border border-white/10 space-y-4">
+              <div>
+                <h4 className="text-sm sm:text-base font-black text-amber-300 uppercase tracking-wider">
+                  Host a New 1v1 Battle
+                </h4>
+                <p className="text-xs text-slate-400">
+                  Select a format, set real-life stakes, and invite your friend with the generated room code.
+                </p>
+              </div>
+
+              {/* Format Selector */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black uppercase text-slate-300 tracking-wider">
+                  Battle Format:
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setBattleFormat("blitz")}
+                    className={`p-3 rounded-2xl border text-left tap-effect transition-all ${
+                      battleFormat === "blitz"
+                        ? "bg-amber-500/20 border-amber-400 text-amber-300 shadow-md ring-1 ring-amber-400/50"
+                        : "bg-black/30 border-white/10 text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    <div className="text-base sm:text-xl mb-1">⚡</div>
+                    <h5 className="text-[10px] sm:text-xs font-black uppercase">Daily Blitz</h5>
+                    <p className="text-[8px] sm:text-[9px] text-slate-400 mt-0.5">24h 1000 HP combat.</p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setBattleFormat("siege")}
+                    className={`p-3 rounded-2xl border text-left tap-effect transition-all ${
+                      battleFormat === "siege"
+                        ? "bg-red-500/20 border-red-400 text-red-300 shadow-md ring-1 ring-red-400/50"
+                        : "bg-black/30 border-white/10 text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    <div className="text-base sm:text-xl mb-1">⚔️</div>
+                    <h5 className="text-[10px] sm:text-xs font-black uppercase">Habit Siege</h5>
+                    <p className="text-[8px] sm:text-[9px] text-slate-400 mt-0.5">7-Day marathon war.</p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setBattleFormat("duel")}
+                    className={`p-3 rounded-2xl border text-left tap-effect transition-all ${
+                      battleFormat === "duel"
+                        ? "bg-sky-500/20 border-sky-400 text-sky-300 shadow-md ring-1 ring-sky-400/50"
+                        : "bg-black/30 border-white/10 text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    <div className="text-base sm:text-xl mb-1">⏱️</div>
+                    <h5 className="text-[10px] sm:text-xs font-black uppercase">Focus Duel</h5>
+                    <p className="text-[8px] sm:text-[9px] text-slate-400 mt-0.5">Live timer standoff.</p>
+                  </button>
+                </div>
+              </div>
+
+              {/* Custom Stakes / Forfeit Input */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black uppercase text-slate-300 tracking-wider">
+                  Real-Life Stakes / Forfeit:
+                </label>
+                <input
+                  type="text"
+                  value={battleStakesInput}
+                  onChange={(e) => setBattleStakesInput(e.target.value)}
+                  placeholder="e.g. 50 Pushups, Buy Coffee, Write Apology Essay..."
+                  className={`w-full py-2.5 px-3.5 rounded-2xl bg-black/60 border border-white/15 text-white text-xs sm:text-sm focus:border-amber-400 focus:outline-none`}
+                />
+                <div className="flex gap-1.5 flex-wrap pt-1">
+                  {["50 Pushups", "Treat to Coffee ☕", "₹500 Forfeit Bet", "1-Hour Study Penalty", "Post on Instagram Story"].map((preset, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setBattleStakesInput(preset)}
+                      className="text-[8px] sm:text-[9px] px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/15 border border-white/10 text-slate-300"
+                    >
+                      {preset}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Focus Duel Duration (if Duel format) */}
+              {battleFormat === "duel" && (
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black uppercase text-slate-300 tracking-wider">
+                    Focus Duel Duration:
+                  </label>
+                  <div className="flex gap-2">
+                    {[15, 25, 45, 60].map((mins) => (
+                      <button
+                        key={mins}
+                        type="button"
+                        onClick={() => setBattleDurationMinutes(mins)}
+                        className={`flex-1 py-2 rounded-xl text-xs font-black uppercase border tap-effect ${
+                          battleDurationMinutes === mins
+                            ? "bg-sky-500 text-white border-sky-400"
+                            : "bg-black/40 border-white/10 text-slate-400"
+                        }`}
+                      >
+                        {mins} Mins
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Host Submit Button */}
+              <button
+                type="button"
+                onClick={handleCreateBattleRoom}
+                disabled={isCreatingBattle}
+                className={`w-full py-3.5 rounded-2xl bg-gradient-to-r from-red-500 via-amber-500 to-yellow-500 text-black font-black text-xs sm:text-sm uppercase tracking-wider shadow-[0_0_25px_rgba(245,158,11,0.5)] tap-effect hover:brightness-110 active:scale-95 disabled:opacity-50`}
+              >
+                {isCreatingBattle ? "CREATING ROOM..." : "⚔️ GENERATE BATTLE ROOM CODE"}
+              </button>
+            </div>
+          )}
+
+          {/* TAB 3: JOIN BATTLE ROOM */}
+          {battleTab === "join" && (
+            <div className="p-4 sm:p-6 rounded-3xl bg-black/40 border border-white/10 space-y-4 text-center">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto rounded-3xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-3xl">
+                🔗
+              </div>
+              <div>
+                <h4 className="text-sm sm:text-base font-black text-white uppercase tracking-wider">
+                  Join Battle Arena
+                </h4>
+                <p className="text-xs text-slate-400 max-w-sm mx-auto mt-1">
+                  Enter the 6-character room code (e.g. <span className="font-mono text-amber-300 font-bold">WAR789</span>) or paste a 1-Click Duel Link.
+                </p>
+              </div>
+
+              <div className="max-w-xs mx-auto space-y-3">
+                <input
+                  type="text"
+                  value={battleRoomCodeInput}
+                  onChange={(e) => setBattleRoomCodeInput(e.target.value)}
+                  placeholder="WAR789 or paste link..."
+                  className="w-full py-3 px-4 rounded-2xl bg-black/80 border-2 border-sky-400/60 text-center font-mono text-sm sm:text-base font-black text-white tracking-wider uppercase focus:border-sky-400 focus:outline-none shadow-lg"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => handleJoinBattleRoom()}
+                  disabled={isJoiningBattle || !battleRoomCodeInput.trim()}
+                  className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-sky-500 to-indigo-600 text-white font-black text-xs sm:text-sm uppercase tracking-wider shadow-[0_0_25px_rgba(56,189,248,0.5)] tap-effect hover:brightness-110 active:scale-95 disabled:opacity-40"
+                >
+                  {isJoiningBattle ? "CONNECTING..." : "⚔️ ENTER THE BATTLE ARENA"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 4: PVP STATS & TUTORIAL */}
+          {battleTab === "history" && (
+            <div className="space-y-4">
+              {/* Head-to-Head Profile Record */}
+              <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-br from-purple-900/30 to-indigo-900/30 border border-purple-500/40 space-y-3">
+                <h4 className="text-xs sm:text-sm font-black text-purple-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <Crown size={14} /> Head-to-Head PvP Combat Record
+                </h4>
+
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="p-3 rounded-2xl bg-black/40 border border-white/5 text-center">
+                    <span className="text-xs sm:text-sm text-slate-400 block uppercase font-bold">Battles Won</span>
+                    <span className="text-lg sm:text-2xl font-black text-emerald-400">{profile?.battlesWon || 0} 👑</span>
+                  </div>
+                  <div className="p-3 rounded-2xl bg-black/40 border border-white/5 text-center">
+                    <span className="text-xs sm:text-sm text-slate-400 block uppercase font-bold">Battles Lost</span>
+                    <span className="text-lg sm:text-2xl font-black text-rose-400">{profile?.battlesLost || 0} 💀</span>
+                  </div>
+                  <div className="p-3 rounded-2xl bg-black/40 border border-white/5 text-center">
+                    <span className="text-xs sm:text-sm text-slate-400 block uppercase font-bold">Win Rate</span>
+                    <span className="text-lg sm:text-2xl font-black text-amber-300">
+                      {((profile?.battlesWon || 0) + (profile?.battlesLost || 0)) > 0
+                        ? `${Math.round(((profile?.battlesWon || 0) / ((profile?.battlesWon || 0) + (profile?.battlesLost || 0))) * 100)}%`
+                        : "0%"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Battle Mode Step-by-Step Tutorial */}
+              <div className="p-4 sm:p-5 rounded-3xl bg-black/40 border border-white/10 space-y-3 text-xs leading-relaxed text-slate-300">
+                <h4 className="font-black text-white uppercase text-xs sm:text-sm flex items-center gap-1.5">
+                  <BookOpen size={14} className="text-amber-400" /> How to Setup & Play Battle Arena:
+                </h4>
+
+                <div className="space-y-2">
+                  <div className="p-2.5 rounded-xl bg-white/5 border border-white/5 flex gap-2">
+                    <span className="font-black text-amber-400">1.</span>
+                    <div>
+                      <strong className="text-white">Host a Room:</strong> Click "Host", choose a format (Daily Blitz, Weekly Siege, or Focus Duel), set your custom forfeit (e.g. 50 pushups), and click "Generate Room Code".
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-white/5 border border-white/5 flex gap-2">
+                    <span className="font-black text-amber-400">2.</span>
+                    <div>
+                      <strong className="text-white">Share 6-Digit Code:</strong> Send the 6-character code (e.g. <code className="text-amber-300 font-mono">WAR789</code>) to your opponent so they can join from their phone or PC.
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-white/5 border border-white/5 flex gap-2">
+                    <span className="font-black text-amber-400">3.</span>
+                    <div>
+                      <strong className="text-white">Combat Strikes:</strong> Every habit you check deals <span className="text-rose-400 font-bold">-100 HP</span> damage to your opponent. A 25m+ Focus Chamber session deals a <span className="text-amber-300 font-bold">250 CRIT Strike</span>. The 9-10 PM Two-Box Cleanup executes a <span className="text-yellow-400 font-bold">300 Finisher</span>!
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-white/5 border border-white/5 flex gap-2">
+                    <span className="font-black text-amber-400">4.</span>
+                    <div>
+                      <strong className="text-white">Streak Shields Absorb DMG:</strong> If your opponent holds Streak Freeze Shields, your strike is absorbed (0 DMG) and consumes 1 of their shields!
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-white/5 border border-white/5 flex gap-2">
+                    <span className="font-black text-amber-400">5.</span>
+                    <div>
+                      <strong className="text-white">Victory & Forfeits:</strong> Reduce your opponent's HP to 0 or survive with higher HP at midnight to claim victory, +100 XP, +5 Stars, and enforce the real-life forfeit!
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -8944,6 +10489,11 @@ One short, electrifying sentence of raw motivation.`;
           </div>
         </div>
       )}
+
+      {/* ========================================== */}
+      {/* ⚔️ 1v1 PVP DISCIPLINE BATTLE ARENA MODAL */}
+      {/* ========================================== */}
+      {isBattleArenaOpen && renderBattleArenaModal()}
 
       {/* ========================================== */}
       {/* 📅 CLASS & MEETING DISPATCHER MODAL */}
